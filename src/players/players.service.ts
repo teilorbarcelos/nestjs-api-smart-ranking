@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createPlayerDto } from 'src/dto/create-player.dto';
+import { updatePlayerDto } from 'src/dto/update-player.dto';
 import { Player } from 'src/interfaces/player.interface';
 import { v4 as uuid } from 'uuid';
 
@@ -9,9 +10,26 @@ export class PlayersService {
   private readonly logger = new Logger(PlayersService.name);
 
   async createUpdatePlayer(createPlayer: createPlayerDto) {
+    const { email } = createPlayer;
+    const playerExists = this.players.find((player) => player.email === email);
     this.logger.log(`criar jogador: ${createPlayer}`);
 
+    if (playerExists) {
+      const updatePlayer: updatePlayerDto = {
+        _id: playerExists._id,
+        ...createPlayer,
+        ranking: 'A',
+        rankingPosition: 1,
+        imageUrl: 'https://github.com/teilorbarcelos.png',
+      };
+      return this.update(updatePlayer);
+    }
+
     return this.create(createPlayer);
+  }
+
+  async getPlayers(): Promise<Player[]> {
+    return this.players;
   }
 
   private create(createPlayer: createPlayerDto): Player {
@@ -27,5 +45,15 @@ export class PlayersService {
     };
     this.players.push(player);
     return player;
+  }
+
+  private update(updatePlayer: updatePlayerDto): Player {
+    this.players = this.players.map((player) => {
+      if (player._id === updatePlayer._id) {
+        return updatePlayer;
+      }
+      return player;
+    });
+    return updatePlayer;
   }
 }
