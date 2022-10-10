@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { createPlayerDto } from 'src/dto/create-player.dto';
 import { updatePlayerDto } from 'src/dto/update-player.dto';
 import { Player } from 'src/interfaces/player.interface';
@@ -30,6 +30,23 @@ export class PlayersService {
 
   async getPlayers(): Promise<Player[]> {
     return this.players;
+  }
+
+  async getPlayerByEmail(email: string): Promise<Player> {
+    const player = this.players.find((player) => player.email === email);
+    if (!player) {
+      throw new NotFoundException(`E-mail não cadastrado: ${email}`);
+    }
+    return player;
+  }
+
+  async deletePlayer(email: string): Promise<Player> {
+    const player = this.players.find((player) => player.email === email);
+    if (!player) {
+      throw new NotFoundException(`E-mail não cadastrado: ${email}`);
+    }
+    this.players = this.players.filter((player) => player.email !== email);
+    return player;
   }
 
   private create(createPlayer: createPlayerDto): Player {
