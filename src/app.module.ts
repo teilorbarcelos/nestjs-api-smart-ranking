@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { DB_URL } from 'env';
 import { PlayersModule } from './players/players.module';
 
 @Module({
   imports: [
     PlayersModule,
-    MongooseModule.forRoot(process.env.DB_URL, {
-      useNewUrlParses: true,
-      useCreateIndex: true,
+    MongooseModule.forRoot(DB_URL, {
+      // useNewUrlParses: true,
+      // useCreateIndex: true,
       useUnifiedTopology: true,
-      useFindAndModify: false,
+      // useFindAndModify: false,
     }),
   ],
   controllers: [],
