@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createPlayerDto } from 'src/dto/create-player.dto';
@@ -13,80 +18,47 @@ export class PlayersService {
 
   private readonly logger = new Logger(PlayersService.name);
 
-  async createUpdatePlayer(createPlayer: createPlayerDto) {
+  async createPlayer(createPlayer: createPlayerDto) {
     const { email } = createPlayer;
-    // const playerExists = this.players.find((player) => player.email === email);
-    // this.logger.log(`criar jogador: ${createPlayer}`);
-
     const playerExists = await this.playerModel.findOne({ email }).exec();
 
     if (playerExists) {
-      const updatePlayer: updatePlayerDto = {
-        _id: playerExists._id,
-        ...createPlayer,
-        ranking: 'A',
-        rankingPosition: 1,
-        imageUrl: 'https://github.com/teilorbarcelos.png',
-      };
-      return this.update(updatePlayer);
+      throw new BadRequestException('E-mail já cadastrado!');
     }
 
-    return this.create(createPlayer);
+    const createdPlayer = new this.playerModel(createPlayer);
+    return await createdPlayer.save();
+  }
+
+  async updatePlayer(_id: string, updatePlayer: updatePlayerDto) {
+    const playerExists = await this.playerModel.findOne({ _id }).exec();
+
+    if (playerExists) {
+      return await this.playerModel
+        .findOneAndUpdate({ _id }, { $set: updatePlayer })
+        .exec();
+    }
+
+    throw new NotFoundException('Jogador não cadastrado!');
   }
 
   async getPlayers(): Promise<Player[]> {
     return await this.playerModel.find().exec();
-    // return this.players;
   }
 
-  async getPlayerByEmail(email: string): Promise<Player> {
-    const player = await this.playerModel.findOne({ email }).exec();
+  async getPlayerById(_id: string): Promise<Player> {
+    const player = await this.playerModel.findOne({ _id }).exec();
     if (!player) {
-      throw new NotFoundException(`E-mail não cadastrado: ${email}`);
+      throw new NotFoundException(
+        `Jogador não encontrado com o ID informado: ${_id}`,
+      );
     }
     return player;
   }
 
-  async deletePlayer(email: string): Promise<Player> {
-    return await this.playerModel.remove({ email }).exec();
-
-    // const player = this.players.find((player) => player.email === email);
-    // if (!player) {
-    //   throw new NotFoundException(`E-mail não cadastrado: ${email}`);
-    // }
-    // this.players = this.players.filter((player) => player.email !== email);
-    // return player;
-  }
-
-  private async create(createPlayer: createPlayerDto): Promise<Player> {
-    const createdPlayer = new this.playerModel(createPlayer);
-    return await createdPlayer.save();
-
-    // const { name, email, phoneNumber } = createPlayer;
-    // const player: Player = {
-    //   _id: uuid(),
-    //   name,
-    //   phoneNumber,
-    //   email,
-    //   ranking: 'A',
-    //   rankingPosition: 1,
-    //   imageUrl: 'https://github.com/teilorbarcelos.png',
-    // };
-    // this.players.push(player);
-    // return player;
-  }
-
-  private async update(updatePlayer: updatePlayerDto): Promise<Player> {
-    return await this.playerModel
-      .findOneAndUpdate({ _id: updatePlayer._id }, { $set: updatePlayer })
-      .exec();
-
-    // this.players = this.players.map((player) => {
-    //   if (player._id === updatePlayer._id) {
-    //     return updatePlayer;
-    //   }
-    //   return player;
-    // });
-    // return updatePlayer;
+  async deletePlayer(
+    _id: string,
+  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
+    return await this.playerModel.deleteOne({ _id });
   }
 }
