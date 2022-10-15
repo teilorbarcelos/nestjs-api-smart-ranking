@@ -1,9 +1,9 @@
-export class updatePlayerDto {
-  readonly _id: string;
+import { IsNotEmpty } from 'class-validator';
+
+export class UpdatePlayerDto {
+  @IsNotEmpty()
   readonly phoneNumber: string;
-  readonly email: string;
+
+  @IsNotEmpty()
   name: string;
-  ranking: string;
-  rankingPosition: number;
-  imageUrl: string;
 }
