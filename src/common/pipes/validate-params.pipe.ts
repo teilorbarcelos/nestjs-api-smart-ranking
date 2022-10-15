@@ -4,7 +4,7 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 
-export class PlayersValidateParamsPipe implements PipeTransform {
+export class ValidateParamsPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     if (!value) {
       throw new BadRequestException(`O valor de ${metadata.data} não é válido`);
