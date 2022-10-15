@@ -21,8 +21,8 @@ export class PlayersController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  async createPlayer(@Body() createPlayer: CreatePlayerDto) {
-    return JSON.stringify(await this.playersService.createPlayer(createPlayer));
+  async createPlayer(@Body() createPlayer: CreatePlayerDto): Promise<Player> {
+    return await this.playersService.createPlayer(createPlayer);
   }
 
   @Put('/:_id')
@@ -30,10 +30,8 @@ export class PlayersController {
   async updatePlayer(
     @Param('_id', PlayersValidateParamsPipe) _id: string,
     @Body() updatePlayer: UpdatePlayerDto,
-  ) {
-    return JSON.stringify(
-      await this.playersService.updatePlayer(_id, updatePlayer),
-    );
+  ): Promise<Player> {
+    return await this.playersService.updatePlayer(_id, updatePlayer);
   }
 
   @Get()
