@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PlayerSchema } from 'src/interfaces/player.schema';
+import { PlayerSchema } from './interfaces/player.schema';
 import { PlayersController } from './players.controller';
 import { PlayersService } from './players.service';
 

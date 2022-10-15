@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { CreatePlayerDto } from 'src/dto/create-player.dto';
 import { UpdatePlayerDto } from 'src/dto/update-player.dto';
-import { Player } from 'src/interfaces/player.interface';
+import { Player } from 'src/players/interfaces/player.interface';
 import { PlayersValidateParamsPipe } from './pipes/players-validate-params.pipe';
 import { PlayersService } from './players.service';
 
