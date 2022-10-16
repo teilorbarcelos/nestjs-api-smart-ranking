@@ -9,8 +9,8 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreatePlayerDto } from 'src/dto/create-player.dto';
-import { UpdatePlayerDto } from 'src/dto/update-player.dto';
+import { CreatePlayerDto } from 'src/players/dto/create-player.dto';
+import { UpdatePlayerDto } from 'src/players/dto/update-player.dto';
 import { Player } from 'src/players/interfaces/player.interface';
 import { ValidateParamsPipe } from '../common/pipes/validate-params.pipe';
 import { PlayersService } from './players.service';

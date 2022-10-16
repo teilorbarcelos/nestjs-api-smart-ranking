@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreatePlayerDto } from 'src/dto/create-player.dto';
-import { UpdatePlayerDto } from 'src/dto/update-player.dto';
+import { CreatePlayerDto } from 'src/players/dto/create-player.dto';
+import { UpdatePlayerDto } from 'src/players/dto/update-player.dto';
 import { Player } from 'src/players/interfaces/player.interface';
 
 @Injectable()
