@@ -9,6 +9,7 @@ import {
   ValidationPipe,
   UsePipes,
   Query,
+  Put,
 } from '@nestjs/common';
 import { ChallengesService } from './challenges.service';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
@@ -39,7 +40,7 @@ export class ChallengesController {
     return await this.challengesService.findChallengeById(_id);
   }
 
-  @Patch('/:_id')
+  @Put('/:_id')
   async update(
     @Param('_id') _id: string,
     @Body() updateChallengeDto: UpdateChallengeDto,
@@ -51,9 +52,7 @@ export class ChallengesController {
   }
 
   @Delete('/:_id')
-  remove(
-    @Param('_id') _id: string,
-  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
+  remove(@Param('_id') _id: string): Promise<Challenge> {
     return this.challengesService.removeChallenge(_id);
   }
 }

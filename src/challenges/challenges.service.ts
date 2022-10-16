@@ -85,24 +85,22 @@ export class ChallengesService {
   ): Promise<Challenge> {
     const challengeExists = await this.challengeModel.findOne({ _id }).exec();
 
+    if (updateChallengeDto.status === ChallengeStatus.PENDING) {
+      throw new NotAcceptableException(
+        'O status informado do desafio é inválido!',
+      );
+    }
+
     if (challengeExists) {
       return await this.challengeModel
         .findOneAndUpdate({ _id }, { $set: updateChallengeDto })
         .exec();
     }
 
-    if (challengeExists.status === ChallengeStatus.PENDING) {
-      throw new NotAcceptableException(
-        'O status informado do desafio é inválido!',
-      );
-    }
-
     throw new NotFoundException('Desafio não cadastrado!');
   }
 
-  async removeChallenge(
-    _id: string,
-  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
+  async removeChallenge(_id: string): Promise<Challenge> {
     const challenge = await this.challengeModel.findOne({ _id }).exec();
     if (!challenge) {
       throw new NotFoundException(
