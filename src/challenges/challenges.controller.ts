@@ -40,6 +40,7 @@ export class ChallengesController {
   }
 
   @Put('/:_id')
+  @UsePipes(ValidationPipe)
   async update(
     @Param('_id') _id: string,
     @Body() updateChallengeDto: UpdateChallengeDto,
