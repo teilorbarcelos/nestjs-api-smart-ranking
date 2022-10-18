@@ -22,9 +22,12 @@ export class ChallengesService {
   ) {}
 
   async create(createChallengeDto: CreateChallengeDto): Promise<Challenge> {
-    createChallengeDto.players.map(
-      async (player) => await this.playersService.getPlayerById(player._id),
-    );
+    const players = await this.playersService.getPlayers();
+    createChallengeDto.players.map((player) => {
+      if (players.filter((p) => p._id == player._id).length === 0) {
+        throw new NotFoundException('Player not found');
+      }
+    });
 
     const isChallengerIncluded = createChallengeDto.players.find(
       (player) => player._id === createChallengeDto.challenger._id,
