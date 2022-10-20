@@ -62,6 +62,21 @@ export class CategoriesService {
       .exec();
   }
 
+  async getCategoryByPlayerId(playerId: any): Promise<Category> {
+    const players = await this.playersService.getPlayers();
+    const playerFilter = players.filter((player) => player._id == playerId);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(`Jogador não cadastrado!`);
+    }
+
+    return await this.categoryModel
+      .findOne()
+      .where('players')
+      .in(playerId)
+      .exec();
+  }
+
   async addPlayerCategory(params: {
     categoryId: string;
     playerId: string;

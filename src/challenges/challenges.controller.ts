@@ -14,6 +14,7 @@ import { ChallengesService } from './challenges.service';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { Challenge } from './interfaces/challenge.interface';
+import { ChallengeStatusValidationPipe } from './pipes/challenge-status-validation.pipe';
 
 @Controller('api/v1/challenges')
 export class ChallengesController {
@@ -40,7 +41,7 @@ export class ChallengesController {
   }
 
   @Put('/:_id')
-  @UsePipes(ValidationPipe)
+  @UsePipes(ChallengeStatusValidationPipe)
   async update(
     @Param('_id') _id: string,
     @Body() updateChallengeDto: UpdateChallengeDto,

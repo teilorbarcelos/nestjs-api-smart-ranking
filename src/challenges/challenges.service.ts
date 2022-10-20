@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,6 +22,8 @@ export class ChallengesService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
+  private readonly logger = new Logger(ChallengesService.name);
+
   async create(createChallengeDto: CreateChallengeDto): Promise<Challenge> {
     const players = await this.playersService.getPlayers();
     createChallengeDto.players.map((player) => {
@@ -39,26 +42,24 @@ export class ChallengesService {
       );
     }
 
-    const categories = await this.categoriesService.getCategories();
-
-    const hasChallengerCategory = categories.find((category) =>
-      category.players.includes(createChallengeDto.challenger._id),
+    const playerCategory = await this.categoriesService.getCategoryByPlayerId(
+      createChallengeDto.challenger._id,
     );
 
-    if (hasChallengerCategory) {
+    if (!playerCategory) {
       throw new BadRequestException(
         'O desafiante não possui ainda uma categoria!',
       );
     }
 
-    const newChallenge = {
-      ...createChallengeDto,
-      status: ChallengeStatus.PENDING,
-    };
+    const newChallenge = new this.challengeModel(createChallengeDto);
+    newChallenge.category = playerCategory.category;
+    newChallenge.date = new Date();
+    newChallenge.status = ChallengeStatus.PENDING;
 
-    const createdChallenge = await this.challengeModel.create(newChallenge);
+    this.logger.log(`Challenge created: ${JSON.stringify(newChallenge)}`);
 
-    return await createdChallenge.save();
+    return await newChallenge.save();
   }
 
   async findAllByPlayerId(playerId: string): Promise<Challenge[]> {
@@ -67,11 +68,17 @@ export class ChallengesService {
       .where('players')
       .equals({ _id: playerId })
       .populate('players')
+      .populate('partida')
       .exec();
   }
 
   async findAll(): Promise<Challenge[]> {
-    return await this.challengeModel.find();
+    return await this.challengeModel
+      .find()
+      .populate('challenger')
+      .populate('players')
+      .populate('partida')
+      .exec();
   }
 
   async findChallengeById(_id: string): Promise<Challenge> {
