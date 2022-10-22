@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -9,15 +10,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CategoriesService } from 'src/categories/categories.service';
 import { PlayersService } from 'src/players/players.service';
+import { AddChallengePlayDto } from './dto/add-challenge-play.dto';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { ChallengeStatus } from './interfaces/challenge-status.enum';
-import { Challenge } from './interfaces/challenge.interface';
+import { Challenge, Play } from './interfaces/challenge.interface';
 
 @Injectable()
 export class ChallengesService {
   constructor(
     @InjectModel('Challenge') private readonly challengeModel: Model<Challenge>,
+    @InjectModel('Play') private readonly playModel: Model<Play>,
     private readonly playersService: PlayersService,
     private readonly categoriesService: CategoriesService,
   ) {}
@@ -68,7 +71,7 @@ export class ChallengesService {
       .where('players')
       .equals({ _id: playerId })
       .populate('players')
-      .populate('partida')
+      .populate('play')
       .exec();
   }
 
@@ -77,7 +80,7 @@ export class ChallengesService {
       .find()
       .populate('challenger')
       .populate('players')
-      .populate('partida')
+      .populate('play')
       .exec();
   }
 
@@ -110,6 +113,76 @@ export class ChallengesService {
     }
 
     throw new NotFoundException('Desafio não cadastrado!');
+  }
+
+  async addChallengePlay(
+    challenge_id: string,
+    addChallengePlayDto: AddChallengePlayDto,
+  ): Promise<Challenge> {
+    const challengeFound = await this.challengeModel
+      .findById(challenge_id)
+      .exec();
+
+    if (!challengeFound) {
+      throw new BadRequestException(`Desafio ${challenge_id} não cadastrado!`);
+    }
+
+    /*
+      Verificar se o jogador vencedor faz parte do desafio
+      */
+    const playerFilter = challengeFound.players.filter(
+      (player) => player._id == addChallengePlayDto.def,
+    );
+
+    this.logger.log(`challengeFound: ${challengeFound}`);
+    this.logger.log(`playerFilter: ${playerFilter}`);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(
+        `O jogador vencedor não faz parte do desafio!`,
+      );
+    }
+
+    /*
+      Primeiro vamos criar e persistir o objeto partida
+      */
+    const newPlay = new this.playModel(addChallengePlayDto);
+
+    /*
+     Atribuir ao objeto partida a categoria recuperada no desafio
+     */
+    newPlay.category = challengeFound.category;
+
+    /*
+     Atribuir ao objeto partida os jogadores que fizeram parte do desafio
+     */
+    newPlay.players = challengeFound.players;
+
+    const result = await newPlay.save();
+
+    /*
+      Quando uma partida for registrada por um usuário, mudaremos o 
+      status do desafio para realizado
+      */
+    challengeFound.status = ChallengeStatus.DONE;
+
+    /*  
+      Recuperamos o ID da partida e atribuimos ao desafio
+      */
+    challengeFound.play = result._id;
+
+    try {
+      return await this.challengeModel
+        .findOneAndUpdate({ _id: challenge_id }, { $set: challengeFound })
+        .exec();
+    } catch (error) {
+      /*
+          Se a atualização do desafio falhar excluímos a partida 
+          gravada anteriormente
+          */
+      await this.challengeModel.deleteOne({ _id: result._id }).exec();
+      throw new InternalServerErrorException();
+    }
   }
 
   async removeChallenge(_id: string): Promise<Challenge> {

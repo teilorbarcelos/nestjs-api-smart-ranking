@@ -4,7 +4,6 @@ import { DB_URL } from 'env';
 import { PlayersModule } from './players/players.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ChallengesModule } from './challenges/challenges.module';
-import { PlaysModule } from './plays/plays.module';
 
 @Module({
   imports: [
@@ -17,7 +16,6 @@ import { PlaysModule } from './plays/plays.module';
     }),
     CategoriesModule,
     ChallengesModule,
-    PlaysModule,
   ],
   controllers: [],
   providers: [],

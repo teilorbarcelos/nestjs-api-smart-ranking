@@ -11,6 +11,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { ChallengesService } from './challenges.service';
+import { AddChallengePlayDto } from './dto/add-challenge-play.dto';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { Challenge } from './interfaces/challenge.interface';
@@ -49,6 +50,17 @@ export class ChallengesController {
     return await this.challengesService.updateChallenge(
       _id,
       updateChallengeDto,
+    );
+  }
+
+  @Post('/:challenge_id/play')
+  async addChallengePlay(
+    @Body(ValidationPipe) addChallengePlayDto: AddChallengePlayDto,
+    @Param('challenge_id') challenge_id: string,
+  ): Promise<Challenge> {
+    return await this.challengesService.addChallengePlay(
+      challenge_id,
+      addChallengePlayDto,
     );
   }
 
